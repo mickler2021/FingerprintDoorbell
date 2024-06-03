@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"name": "Doorbell",
+			"path": "../../../esp-development/Doorbell"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"string": "cpp",
+			"functional": "cpp"
+		}
+	}
+}
