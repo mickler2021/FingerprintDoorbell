@@ -526,6 +526,16 @@ void mqttCallback(char* topic, byte* message, unsigned int length) {
     }
   }
 
+  // Check incomming message for interesting topics - RingOff New-Feature
+    if (String(topic) == String(settingsManager.getAppSettings().mqttRootTopic) + "/RingOff") {
+    if(messageTemp == "on"){
+      fingerManager.setRingOff(true);
+    }
+    else if(messageTemp == "off"){
+      fingerManager.setRingOff(false);
+    }
+  }
+
   #ifdef CUSTOM_GPIOS
     if (String(topic) == String(settingsManager.getAppSettings().mqttRootTopic) + "/customOutput1") {
       if(messageTemp == "on"){
@@ -566,8 +576,11 @@ void connectMqttClient() {
       Serial.println("connected");
       // Subscribe
       mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/ignoreTouchRing").c_str(), 1); // QoS = 1 (at least once)
+      // New-Feature - RingOff
+      mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/RingOff").c_str(), 1); // QoS = 1 (at least once) 
+
       #ifdef CUSTOM_GPIOS
-        mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/customOutput1").c_str(), 1); // QoS = 1 (at least once)
+        mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/customOutputcustomOutput11").c_str(), 1); // QoS = 1 (at least once)
         mqttClient.subscribe((settingsManager.getAppSettings().mqttRootTopic + "/customOutput2").c_str(), 1); // QoS = 1 (at least once)
       #endif
 
@@ -611,6 +624,7 @@ void doScan()
           mqttClient.publish((String(mqttRootTopic) + "/matchName").c_str(), match.matchName.c_str());
           mqttClient.publish((String(mqttRootTopic) + "/matchConfidence").c_str(), String(match.matchConfidence).c_str());
           Serial.println("MQTT message sent: Open the door!");
+          delay(1000);
           digitalWrite(summerOutputPin, LOW);
         } else {
           notifyClients("Security issue! Match was not sent by MQTT because of invalid sensor pairing! This could potentially be an attack! If the sensor is new or has been replaced by you do a (re)pairing in settings page.");
@@ -621,14 +635,16 @@ void doScan()
     case ScanResult::noMatchFound:
       notifyClients(String("No Match Found (Code ") + match.returnCode + ")");
       if (match.scanResult != lastMatch.scanResult) {
-        digitalWrite(doorbellOutputPin, HIGH);
-        mqttClient.publish((String(mqttRootTopic) + "/ring").c_str(), "on");
-        mqttClient.publish((String(mqttRootTopic) + "/matchId").c_str(), "-1");
-        mqttClient.publish((String(mqttRootTopic) + "/matchName").c_str(), "");
-        mqttClient.publish((String(mqttRootTopic) + "/matchConfidence").c_str(), "-1");
-        Serial.println("MQTT message sent: ring the bell!");
-        delay(1000);
-        digitalWrite(doorbellOutputPin, LOW); 
+        if (!fingerManager.ringoff) {  // New-Feature RingBell Off
+          digitalWrite(doorbellOutputPin, HIGH);
+          mqttClient.publish((String(mqttRootTopic) + "/ring").c_str(), "on");
+          mqttClient.publish((String(mqttRootTopic) + "/matchId").c_str(), "-1");
+          mqttClient.publish((String(mqttRootTopic) + "/matchName").c_str(), "");
+          mqttClient.publish((String(mqttRootTopic) + "/matchConfidence").c_str(), "-1");
+          Serial.println("MQTT message sent: ring the bell!");
+          delay(1000);
+          digitalWrite(doorbellOutputPin, LOW); 
+        }
       } else {
         delay(1000); // wait some time before next scan to let the LED blink
       }
@@ -694,6 +710,7 @@ void setup()
 
   // initialize GPIOs
   pinMode(doorbellOutputPin, OUTPUT); 
+  pinMode(summerOutputPin, OUTPUT); 
   #ifdef CUSTOM_GPIOS
     pinMode(customOutput1, OUTPUT); 
     pinMode(customOutput2, OUTPUT); 

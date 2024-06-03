@@ -41,7 +41,8 @@ class FingerprintManager {
     int fingerCountOnSensor = 0;
     bool ignoreTouchRing = false; // set to true when the sensor is usually exposed to rain to avoid false ring events. Can also be set conditional by a rain sensor over MQTT
     bool lastIgnoreTouchRing = false;
-    
+    bool lastRingOff = false;
+  
     void updateTouchState(bool touched);
     bool isRingTouched();
     void loadFingerListFromPrefs();
@@ -58,12 +59,14 @@ class FingerprintManager {
   public:
     bool connected;
     bool connect();
+    bool ringoff = false; // Deactivate ringing - New-Feature
     Match scanFingerprint();
     NewFinger enrollFinger(int id, String name);
     void deleteFinger(int id);
     void renameFinger(int id, String newName);
     String getFingerListAsHtmlOptionList();
     void setIgnoreTouchRing(bool state);
+    void setRingOff(bool state);
     bool isFingerOnSensor();
     void setLedRingError();
     void setLedRingWifiConfig();

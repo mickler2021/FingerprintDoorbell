@@ -50,7 +50,7 @@ bool FingerprintManager::connect() {
 
 void FingerprintManager::updateTouchState(bool touched)
 {
-  if ((touched != lastTouchState) || (ignoreTouchRing != lastIgnoreTouchRing)) {
+  if ((touched != lastTouchState) || (ignoreTouchRing != lastIgnoreTouchRing) || (ringoff != lastRingOff)) {
       // check if sensor or ring is touched
       if (touched) {
         // turn touch indicator on:
@@ -62,6 +62,7 @@ void FingerprintManager::updateTouchState(bool touched)
   }
   lastTouchState = touched;
   lastIgnoreTouchRing = ignoreTouchRing;
+  lastRingOff = ringoff;
   
 }
 
@@ -426,7 +427,16 @@ void FingerprintManager::setIgnoreTouchRing(bool state) {
       notifyClients("IgnoreTouchRing is now 'off'");
   }
 }
-
+// Deactivate RingBell
+void FingerprintManager::setRingOff(bool state) {
+  if (ringoff != state) {
+    ringoff = state;
+    if (state == true)
+      notifyClients("RingOff is now 'on'");
+    else
+      notifyClients("RingOff is now 'off'");
+  }
+}
 
 bool FingerprintManager::isRingTouched() {
   if (digitalRead(touchRingPin) == LOW) // LOW = touched. Caution: touchSignal on this pin occour only once (at beginning of touching the ring, not every iteration if you keep your finger on the ring)
@@ -455,11 +465,26 @@ void FingerprintManager::setLedRingWifiConfig() {
   finger.LEDcontrol(FINGERPRINT_LED_BREATHING, 250, FINGERPRINT_LED_RED);
 }
 
+/* DEPRECATED because of New-Feature RingOff
 void FingerprintManager::setLedRingReady() {
   if (!ignoreTouchRing)
     finger.LEDcontrol(touchRingActiveSequence, 250, touchRingActiveColor);
   else
     finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_BLUE); // just an indicator for me to see if touch ring is active or not
+}
+*/
+
+// New-Feature RingOff
+void FingerprintManager::setLedRingReady() {
+  if ((ignoreTouchRing) && (!ringoff)) {
+    finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_BLUE); // just an indicator for me to see if touch ring is active or not
+  }
+  else if (ringoff) {
+    finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, FINGERPRINT_LED_BLUE); // just an indicator for me to see if "RingBell" is active or not
+  }
+  else {
+    finger.LEDcontrol(touchRingActiveSequence, 250, touchRingActiveColor);
+  }
 }
 
 bool FingerprintManager::deleteAll() {
