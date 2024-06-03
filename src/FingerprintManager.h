@@ -59,14 +59,14 @@ class FingerprintManager {
   public:
     bool connected;
     bool connect();
-    bool ringoff = false; // Deactivate ringing - New-Feature
+    bool ringoff = false; // set to true if the bell should be deactivated
     Match scanFingerprint();
     NewFinger enrollFinger(int id, String name);
     void deleteFinger(int id);
     void renameFinger(int id, String newName);
     String getFingerListAsHtmlOptionList();
     void setIgnoreTouchRing(bool state);
-    void setRingOff(bool state);
+    void setRingOff(bool state); 
     bool isFingerOnSensor();
     void setLedRingError();
     void setLedRingWifiConfig();
