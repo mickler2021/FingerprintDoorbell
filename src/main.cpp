@@ -30,7 +30,7 @@ const char* Checked = "checked"; // password used for WiFi when in Access Point 
 const long  gmtOffset_sec = 0; // UTC Time
 const int   daylightOffset_sec = 0; // UTC Time
 const int   doorbellOutputPin = 19; // pin connected to the doorbell (when using hardware connection instead of mqtt to ring the bell)
-const int   summerOutputPin = 18; // pin connected to the summer (when using hardware connection instead of mqtt to open door)
+const int   buzzerOutputPin = 18; // pin connected to the buzzer (when using hardware connection instead of mqtt to open door)
 
 #ifdef CUSTOM_GPIOS
   const int   customOutput1 = 18; // not used internally, but can be set over MQTT
@@ -618,14 +618,14 @@ void doScan()
       notifyClients( String("Match Found: ") + match.matchId + " - " + match.matchName  + " with confidence of " + match.matchConfidence );
       if (match.scanResult != lastMatch.scanResult) {
         if (checkPairingValid()) {
-          digitalWrite(summerOutputPin, HIGH);
+          digitalWrite(buzzerOutputPin, HIGH);
           mqttClient.publish((String(mqttRootTopic) + "/ring").c_str(), "off");
           mqttClient.publish((String(mqttRootTopic) + "/matchId").c_str(), String(match.matchId).c_str());
           mqttClient.publish((String(mqttRootTopic) + "/matchName").c_str(), match.matchName.c_str());
           mqttClient.publish((String(mqttRootTopic) + "/matchConfidence").c_str(), String(match.matchConfidence).c_str());
           Serial.println("MQTT message sent: Open the door!");
           delay(1000);
-          digitalWrite(summerOutputPin, LOW);
+          digitalWrite(buzzerOutputPin, LOW);
         } else {
           notifyClients("Security issue! Match was not sent by MQTT because of invalid sensor pairing! This could potentially be an attack! If the sensor is new or has been replaced by you do a (re)pairing in settings page.");
         }
@@ -710,7 +710,7 @@ void setup()
 
   // initialize GPIOs
   pinMode(doorbellOutputPin, OUTPUT); 
-  pinMode(summerOutputPin, OUTPUT); 
+  pinMode(buzzerOutputPin, OUTPUT); 
   #ifdef CUSTOM_GPIOS
     pinMode(customOutput1, OUTPUT); 
     pinMode(customOutput2, OUTPUT); 

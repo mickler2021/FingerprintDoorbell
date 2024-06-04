@@ -480,7 +480,7 @@ void FingerprintManager::setLedRingReady() {
     finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_BLUE); // just an indicator for me to see if touch ring is active or not
   }
   else if (ringoff) {
-    finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, FINGERPRINT_LED_BLUE); // just an indicator for me to see if "RingBell" is active or not
+    finger.LEDcontrol(FINGERPRINT_LED_OFF, 0, FINGERPRINT_LED_BLUE); // just an indicator for me to see if "RingOff" is active or not
   }
   else {
     finger.LEDcontrol(touchRingActiveSequence, 250, touchRingActiveColor);
